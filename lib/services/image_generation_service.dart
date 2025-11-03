@@ -249,7 +249,7 @@ class ImageEditingService {
 
       // Call the Edge Function for image editing
       final editResponse = await SupabaseConfig.client.functions.invoke(
-        'image-edit',
+        'wan',
         body: {
           'image_url': originalImageUrl,
           'prompt': prompt,
