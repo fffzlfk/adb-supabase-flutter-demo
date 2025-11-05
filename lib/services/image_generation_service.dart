@@ -247,6 +247,8 @@ class ImageEditingService {
           .from('images')
           .createSignedUrl(uploadFileName, 3600);
 
+      debugPrint('Original image URL: $originalImageUrl');
+
       // Call the Edge Function for image editing
       final editResponse = await SupabaseConfig.client.functions.invoke(
         'wan',

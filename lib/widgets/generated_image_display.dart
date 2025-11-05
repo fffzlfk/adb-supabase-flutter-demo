@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:share_plus/share_plus.dart';
@@ -118,23 +119,46 @@ class EditedImageDisplay extends StatelessWidget {
                   : image != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: CachedNetworkImage(
-                            imageUrl: image!.editedImageUrl,
-                            fit: BoxFit.contain,
-                            placeholder: (context, url) => const Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                            errorWidget: (context, url, error) => const Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.error, size: 48, color: Colors.red),
-                                  SizedBox(height: 8),
-                                  Text('Failed to load image'),
-                                ],
-                              ),
-                            ),
-                          ),
+                          child: kIsWeb
+                              ? Image.network(
+                                  image!.editedImageUrl,
+                                  fit: BoxFit.contain,
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.error, size: 48, color: Colors.red),
+                                          SizedBox(height: 8),
+                                          Text('Failed to load image'),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                )
+                              : CachedNetworkImage(
+                                  imageUrl: image!.editedImageUrl,
+                                  fit: BoxFit.contain,
+                                  placeholder: (context, url) => const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                  errorWidget: (context, url, error) => const Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.error, size: 48, color: Colors.red),
+                                        SizedBox(height: 8),
+                                        Text('Failed to load image'),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                         )
                       : Center(
                           child: Column(
@@ -170,13 +194,26 @@ class EditedImageDisplay extends StatelessWidget {
                         const SizedBox(height: 8),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: CachedNetworkImage(
-                            imageUrl: image!.originalImageUrl,
-                            height: 120,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => const CircularProgressIndicator(),
-                            errorWidget: (context, url, error) => const Icon(Icons.error),
-                          ),
+                          child: kIsWeb
+                              ? Image.network(
+                                  image!.originalImageUrl,
+                                  height: 120,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return const CircularProgressIndicator();
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(Icons.error);
+                                  },
+                                )
+                              : CachedNetworkImage(
+                                  imageUrl: image!.originalImageUrl,
+                                  height: 120,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => const CircularProgressIndicator(),
+                                  errorWidget: (context, url, error) => const Icon(Icons.error),
+                                ),
                         ),
                       ],
                     ),
@@ -191,13 +228,26 @@ class EditedImageDisplay extends StatelessWidget {
                         const SizedBox(height: 8),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: CachedNetworkImage(
-                            imageUrl: image!.editedImageUrl,
-                            height: 120,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => const CircularProgressIndicator(),
-                            errorWidget: (context, url, error) => const Icon(Icons.error),
-                          ),
+                          child: kIsWeb
+                              ? Image.network(
+                                  image!.editedImageUrl,
+                                  height: 120,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return const CircularProgressIndicator();
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(Icons.error);
+                                  },
+                                )
+                              : CachedNetworkImage(
+                                  imageUrl: image!.editedImageUrl,
+                                  height: 120,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => const CircularProgressIndicator(),
+                                  errorWidget: (context, url, error) => const Icon(Icons.error),
+                                ),
                         ),
                       ],
                     ),

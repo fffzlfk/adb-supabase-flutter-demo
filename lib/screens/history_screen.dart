@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -52,16 +53,32 @@ class _HistoryScreenState extends State<HistoryScreen> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: CachedNetworkImage(
-                    imageUrl: image.editedImageUrl,
-                    fit: BoxFit.contain,
-                    placeholder: (context, url) => const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                    errorWidget: (context, url, error) => const Center(
-                      child: Icon(Icons.error, size: 48),
-                    ),
-                  ),
+                  child: kIsWeb
+                      ? Image.network(
+                          image.editedImageUrl,
+                          fit: BoxFit.contain,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(
+                              child: Icon(Icons.error, size: 48),
+                            );
+                          },
+                        )
+                      : CachedNetworkImage(
+                          imageUrl: image.editedImageUrl,
+                          fit: BoxFit.contain,
+                          placeholder: (context, url) => const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                          errorWidget: (context, url, error) => const Center(
+                            child: Icon(Icons.error, size: 48),
+                          ),
+                        ),
                 ),
               ),
               
@@ -203,22 +220,44 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       // Image
                       Expanded(
                         flex: 3,
-                        child: CachedNetworkImage(
-                          imageUrl: image.editedImageUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
-                            color: Colors.grey.shade200,
-                            child: const Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                          ),
-                          errorWidget: (context, url, error) => Container(
-                            color: Colors.grey.shade300,
-                            child: const Center(
-                              child: Icon(Icons.error),
-                            ),
-                          ),
-                        ),
+                        child: kIsWeb
+                            ? Image.network(
+                                image.editedImageUrl,
+                                fit: BoxFit.cover,
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Container(
+                                    color: Colors.grey.shade200,
+                                    child: const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: Colors.grey.shade300,
+                                    child: const Center(
+                                      child: Icon(Icons.error),
+                                    ),
+                                  );
+                                },
+                              )
+                            : CachedNetworkImage(
+                                imageUrl: image.editedImageUrl,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  color: Colors.grey.shade200,
+                                  child: const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  color: Colors.grey.shade300,
+                                  child: const Center(
+                                    child: Icon(Icons.error),
+                                  ),
+                                ),
+                              ),
                       ),
                       
                       // Details
