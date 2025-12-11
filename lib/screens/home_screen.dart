@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/image_generation_provider.dart';
+import '../providers/auth_provider.dart';
 import 'history_screen.dart';
 import 'edit_result_screen.dart';
 import '../widgets/image_upload_widget.dart';
@@ -24,13 +25,52 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> _handleSignOut(BuildContext context) async {
+    final authProvider = context.read<AuthProvider>();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sign Out'),
+        content: const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sign Out'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      await authProvider.signOut();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+    final user = authProvider.user;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('AI Image Editor'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
+          // User email display
+          if (user != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Center(
+                child: Text(
+                  user.email ?? 'User',
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+            ),
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () {
@@ -39,6 +79,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 MaterialPageRoute(builder: (context) => const HistoryScreen()),
               );
             },
+            tooltip: 'History',
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => _handleSignOut(context),
+            tooltip: 'Sign Out',
           ),
         ],
       ),

@@ -9,15 +9,21 @@ A Flutter application that edits images based on text prompts using Supabase Edg
 cp .env.example .env
 ```
 
-Edit the `.env` file with your Supabase SUPABASE_URL, SUPABASE_SERVICE_KEY.
+Edit the `.env` file with your Supabase SUPABASE_URL and SUPABASE_ANON_KEY:
+
+```
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
 ### 2. Database Setup
 
-Create a table for storing generated images (optional, for history feature):
+Create a table for storing generated images (for history feature). Run the SQL commands from `schema/table.sql` in your Supabase SQL Editor:
 
 ```sql
 CREATE TABLE public.edited_images (
     id TEXT PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     prompt TEXT NOT NULL,
     original_image_url TEXT NOT NULL,
     edited_image_url TEXT NOT NULL,
@@ -27,18 +33,71 @@ CREATE TABLE public.edited_images (
 -- Enable Row Level Security
 ALTER TABLE edited_images ENABLE ROW LEVEL SECURITY;
 
--- Create a policy that allows all operations (adjust based on your needs)
-CREATE POLICY "Allow all operations on edited_images" ON edited_images FOR ALL USING (true);
+-- Create policy that allows users to see only their own images
+CREATE POLICY "Users can view their own edited images"
+ON edited_images
+FOR SELECT
+TO authenticated
+USING (auth.uid() = user_id);
+
+-- Create policy that allows users to insert their own images
+CREATE POLICY "Users can insert their own edited images"
+ON edited_images
+FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = user_id);
+
+-- Create policy that allows users to delete their own images
+CREATE POLICY "Users can delete their own edited images"
+ON edited_images
+FOR DELETE
+TO authenticated
+USING (auth.uid() = user_id);
 ```
 
-### 3. Create Storage Bucket
+**Note:** The table includes a `user_id` field to ensure users can only access their own image history.
 
-Create a storage bucket named `images`.
+### 3. Create Storage Bucket and Configure RLS Policies
+
+1. Create a storage bucket named `images` via Supabase Dashboard > Storage
+
+2. Configure Row Level Security (RLS) policies for the storage bucket. Run the SQL commands from `schema/storage_policies.sql` in your Supabase SQL Editor:
+
+```sql
+-- Allow authenticated users to upload files to their own folder
+CREATE POLICY "Allow authenticated users to upload images"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'images' AND
+  auth.uid()::text = (storage.foldername(name))[1]
+);
+
+-- Allow authenticated users to read their own files
+CREATE POLICY "Allow authenticated users to read their own images"
+ON storage.objects
+FOR SELECT
+TO authenticated
+USING (
+  bucket_id = 'images' AND
+  auth.uid()::text = (storage.foldername(name))[1]
+);
+
+-- Allow public read access (for public URLs)
+CREATE POLICY "Allow public read access to images"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'images');
+```
+
+**Note:** The app organizes uploaded files by user ID (`userId/filename`), so each user can only access their own files.
 
 
 ### 4. Edge Function Setup
 
-Create a Supabase Edge Function named `wan`:
+Create a Supabase Edge Function named `image-edit`:
 
 
 ```typescript
