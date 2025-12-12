@@ -102,7 +102,7 @@ Create a Supabase Edge Function named `image-edit`:
 
 ```typescript
 const DASHSCOPE_API_KEY = Deno.env.get('BAILIAN_API_KEY');
-const BASE_URL = 'https://vpc-cn-beijing.dashscope.aliyuncs.com/api/v1';
+const BASE_URL = 'https://dashscope.aliyuncs.com/api/v1';
 async function callImageEditAPI(image_url, prompt) {
   const messages = [
     {
